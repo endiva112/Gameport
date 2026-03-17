@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 function Login() {
+  const navigate = useNavigate();
+
   return (
     <div className="d-flex flex-column min-vh-100" style={{ background: "#4A4E69" }}>
       
@@ -62,6 +66,7 @@ function Login() {
           <div className="text-center">
             <h3>¿Aún no tienes cuenta?</h3>
             <button
+              onClick={() => navigate("/register")}
               className="btn mt-2"
               style={{ background: "#AAA0A5", fontWeight: "bold", fontSize: "18px", width: "240px" }}
             >

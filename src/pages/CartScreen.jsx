@@ -4,7 +4,7 @@ import Header from "../components/Header";
 function Cart() {
 
   const [cart, setCart] = useState([
-    { name: "Hollow Knight", price: "14.99€", img: "/assets/hollow_knight.png" },
+    { name: "Hollow Knight", price: "14.99€", img: "/assets/silksongImg.jpg" },
     { name: "GTA V", price: "29.99€", img: "/assets/gta_v.png" },
     { name: "Terraria", price: "9.99€", img: "/assets/terraria.png" }
   ]);

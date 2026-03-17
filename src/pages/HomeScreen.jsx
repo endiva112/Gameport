@@ -1,31 +1,51 @@
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
+import { supabase } from "../supabaseClient.js";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
-  const games = [
-    { name: "Hollow Knight", img: "/assets/silksongImg.jpg" },
-    { name: "Grand Theft Auto V", img: "/assets/gta5Img.jpg" },
-    { name: "Terraria", img: "/assets/terrariaImg.jpg" },
-    { name: "Hollow Knight", img: "/assets/hollow_knight.png" },
-    { name: "Grand Theft Auto V", img: "/assets/gta_v.png" },
-    { name: "Terraria", img: "/assets/terraria.png" },
-    { name: "Hollow Knight", img: "/assets/hollow_knight.png" },
-    { name: "Grand Theft Auto V", img: "/assets/gta_v.png" },
-    { name: "Terraria", img: "/assets/terraria.png" },
-  ];
+  const [games, setGames] = useState([]);
+  const [cards, setCards] = useState([]);
 
-  const cards = [
-    { name: "Steam", img: "/assets/steam_card.png" },
-    { name: "PlayStation Store", img: "/assets/ps_card.png" },
-    { name: "Xbox Gift Card", img: "/assets/xbox_card.png" },
-  ];
+  const navigate = useNavigate();
 
+  const goToProduct = (id) => {
+    navigate(`/product/${id}`);
+  };
+
+  // Traer productos al montar el componente
+  useEffect(() => {
+    async function fetchProducts() {
+      // Juegos (PC, Xbox, PlayStation, Nintendo)
+      const { data: gamesData, error: gamesError } = await supabase
+        .from("products")
+        .select("*")
+        .not("category", "eq", "tarjetas"); // todo lo que no sea tarjeta
+
+      if (gamesError) console.error("Error cargando juegos:", gamesError);
+      else setGames(gamesData);
+
+      // Tarjetas
+      const { data: cardsData, error: cardsError } = await supabase
+        .from("products")
+        .select("*")
+        .eq("category", "tarjetas");
+
+      if (cardsError) console.error("Error cargando tarjetas:", cardsError);
+      else setCards(cardsData);
+    }
+
+    fetchProducts();
+  }, []);
+
+  // MIS TARJETAS
   const renderRow = (items) => (
     <div
       className="d-flex gap-3 overflow-auto pb-3"
       onWheel={(e) => (e.currentTarget.scrollLeft += e.deltaY)}
     >
-      {items.map((item, i) => (
-        <div key={i} className="flex-shrink-0" style={{ width: "200px" }}>
+      {items.map((item) => (
+        <div key={item.id} className="flex-shrink-0" style={{ width: "200px" }}>
           <div
             className="card h-100"
             style={{
@@ -34,6 +54,7 @@ function Home() {
               cursor: "pointer",
               transition: "0.2s"
             }}
+            onClick={() => goToProduct(item.id)} // navegación por producto
             onMouseEnter={(e) =>
               (e.currentTarget.style.transform = "scale(1.05)")
             }
@@ -42,7 +63,7 @@ function Home() {
             }
           >
             <img
-              src={item.img}
+              src={item.image_url}
               className="card-img-top"
               style={{ height: "200px", objectFit: "cover" }}
               alt={item.name}
@@ -58,124 +79,102 @@ function Home() {
 
   return (
     <div style={{ background: "#4A4E69", minHeight: "100vh", color: "white" }}>
-
-      {/* HEADER */}
       <Header />
 
       {/* SECCIONES */}
-
-      {/* base */}
       <section
         className="py-5"
-        style={{
-          background: "linear-gradient(135deg, #8B0000, #4A4E69)"
-        }}
+        style={{ background: "linear-gradient(135deg, #8B0000, #4A4E69)" }}
       >
         <div className="container text-center">
-
           <h1 className="mb-5 fw-bold">🔥 Juegos más populares</h1>
 
-          <div className="row justify-content-center align-items-end g-4">
+          {/** Creamos un array con los 3 juegos específicos en el orden deseado */}
+          {(() => {
+            const popularGames = [
+              games.find((g) => g.name.includes("Hollow Knight: Silksong")),
+              games.find((g) => g.name.includes("Grand Theft Auto V")),
+              games.find((g) => g.name.includes("Elden Ring")),
+            ];
 
-            {/*Segundo*/}
-            <div className="col-md-3">
-              <div
-                className="card"
-                style={{
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  transform: "scale(0.95)",
-                  transition: "0.3s"
-                }}
-              >
-                <img
-                  src={games[1].img}
-                  className="card-img-top"
-                  style={{ height: "320px", objectFit: "cover" }}
-                />
-                <div className="card-body">
-                  <p className="fw-bold m-0">{games[1].name}</p>
-                  <small className="text-muted">🥈 #2</small>
+            return (
+              <div className="row justify-content-center align-items-end g-4">
+                {/* Segundo */}
+                <div className="col-md-3">
+                  <div className="card" style={{ borderRadius: "12px", cursor: "pointer" }} onClick={() => goToProduct(popularGames[1]?.id)}>
+                    <img
+                      src={popularGames[1]?.image_url}
+                      className="card-img-top"
+                      style={{ height: "320px", objectFit: "cover" }}
+                    />
+                    <div className="card-body">
+                      <p className="fw-bold m-0">{popularGames[1]?.name}</p>
+                      <small className="text-muted">🥈 #2</small>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Primero */}
+                <div className="col-md-4">
+                  <div className="card" style={{ borderRadius: "12px", cursor: "pointer" }} onClick={() => goToProduct(popularGames[0]?.id)}>
+                    <img
+                      src={popularGames[0]?.image_url}
+                      className="card-img-top"
+                      style={{ height: "360px", objectFit: "cover" }}
+                    />
+                    <div className="card-body">
+                      <p className="fw-bold m-0">{popularGames[0]?.name}</p>
+                      <small className="text-warning">🥇 #1</small>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tercero */}
+                <div className="col-md-3">
+                  <div className="card" style={{ borderRadius: "12px", cursor: "pointer" }} onClick={() => goToProduct(popularGames[2]?.id)}>
+                    <img
+                      src={popularGames[2]?.image_url}
+                      className="card-img-top"
+                      style={{ height: "320px", objectFit: "cover" }}
+                    />
+                    <div className="card-body">
+                      <p className="fw-bold m-0">{popularGames[2]?.name}</p>
+                      <small className="text-muted">🥉 #3</small>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/*Primero*/}
-            <div className="col-md-4">
-              <div
-                className="card shadow"
-                style={{
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  transform: "scale(1.1)",
-                  transition: "0.3s"
-                }}
-              >
-                <img
-                  src={games[0].img}
-                  className="card-img-top"
-                  style={{ height: "360px", objectFit: "cover" }}
-                />
-                <div className="card-body">
-                  <p className="fw-bold m-0">{games[0].name}</p>
-                  <small className="text-warning">🥇 #1</small>
-                </div>
-              </div>
-            </div>
-
-            {/*Tercero*/}
-            <div className="col-md-3">
-              <div
-                className="card"
-                style={{
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  transform: "scale(0.95)",
-                  transition: "0.3s"
-                }}
-              >
-                <img
-                  src={games[2].img}
-                  className="card-img-top"
-                  style={{ height: "320px", objectFit: "cover" }}
-                />
-                <div className="card-body">
-                  <p className="fw-bold m-0">{games[2].name}</p>
-                  <small className="text-muted">🥉 #3</small>
-                </div>
-              </div>
-            </div>
-
-          </div>
+            );
+          })()}
         </div>
       </section>
 
-      {/* contraste suave */}
+      {/* Filas por categoría */}
       <section className="py-5" style={{ background: "#3F4360" }} id="PC">
         <div className="container">
           <h2 className="mb-4">PC</h2>
-          {renderRow(games)}
+          {renderRow(games.filter((g) => g.category === "pc"))}
         </div>
       </section>
 
       <section className="py-5" style={{ background: "#4A4E69" }} id="PLAYSTATION">
         <div className="container">
           <h2 className="mb-4">PlayStation</h2>
-          {renderRow(games)}
+          {renderRow(games.filter((g) => g.category === "playstation"))}
         </div>
       </section>
 
       <section className="py-5" style={{ background: "#3F4360" }} id="XBOX">
         <div className="container">
           <h2 className="mb-4">Xbox</h2>
-          {renderRow(games)}
+          {renderRow(games.filter((g) => g.category === "xbox"))}
         </div>
       </section>
 
       <section className="py-5" style={{ background: "#4A4E69" }} id="NINTENDO">
         <div className="container">
           <h2 className="mb-4">Nintendo</h2>
-          {renderRow(games)}
+          {renderRow(games.filter((g) => g.category === "nintendo"))}
         </div>
       </section>
 
@@ -185,21 +184,6 @@ function Home() {
           {renderRow(cards)}
         </div>
       </section>
-
-      {/* FOOTER */}
-      <footer className="py-4" style={{ background: "#22223B" }}>
-        <div className="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-          <div className="fw-bold">
-            Gameport © 2026
-          </div>
-
-          <div className="d-flex gap-4">
-            <a href="#" className="text-white text-decoration-none">Contacto</a>
-            <a href="#" className="text-white text-decoration-none">Términos</a>
-            <a href="#" className="text-white text-decoration-none">Privacidad</a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
