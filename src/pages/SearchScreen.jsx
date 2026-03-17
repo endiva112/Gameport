@@ -9,7 +9,7 @@ function Search() {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
-  // Traer todos los productos
+  // Trae todos los productos
   useEffect(() => {
     async function fetchProducts() {
       const { data, error } = await supabase
@@ -24,7 +24,7 @@ function Search() {
     fetchProducts();
   }, []);
 
-  // Filtrar por nombre
+  // Filtro por nombre
   const filteredGames = games.filter((g) =>
     g.name.toLowerCase().includes(search.toLowerCase())
   );

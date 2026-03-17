@@ -49,9 +49,9 @@ function Register() {
     if (error) {
       setMessage({ type: "error", text: "Error al crear la cuenta" });
     } else {
-      // Guardamos usuario en localStorage para sesión
+      // Guardo usuario en localStorage para sesión
       localStorage.setItem("user", JSON.stringify(data));
-      navigate("/"); // redirige al home
+      navigate("/"); // redirijo al home
     }
   };
 

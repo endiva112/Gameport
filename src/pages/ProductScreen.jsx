@@ -10,7 +10,7 @@ function Product() {
   const [inCart, setInCart] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Obtenemos el usuario de localStorage
+  // Obtengo el usuario de localStorage
   const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
@@ -20,7 +20,7 @@ function Product() {
     }
 
     async function fetchData() {
-      // Traemos el producto
+      // Extraigo el producto
       const { data: productData, error: productError } = await supabase
         .from("products")
         .select("*")
@@ -30,7 +30,7 @@ function Product() {
       if (productError) console.error("Error cargando producto:", productError);
       else setGame(productData);
 
-      // Revisamos si el producto ya está en el carrito
+      // Reviso si el producto ya está en el carrito
       const { data: cartData, error: cartError } = await supabase
         .from("cart")
         .select("*")
@@ -57,7 +57,7 @@ function Product() {
     }
 
     if (inCart) {
-      // Quitar del carrito
+      // Quito del carrito
       const { error } = await supabase
         .from("cart")
         .delete()
@@ -67,7 +67,7 @@ function Product() {
       if (error) console.error("Error eliminando del carrito:", error);
       else setInCart(false);
     } else {
-      // Agregar al carrito
+      // Agrego al carrito
       const { error } = await supabase
         .from("cart")
         .insert([{ user_id: user.id, product_id: id }]);

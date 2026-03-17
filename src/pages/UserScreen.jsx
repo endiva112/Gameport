@@ -1,4 +1,5 @@
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +16,7 @@ function Account() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState(null);
 
-  // Al montar, cargamos el usuario desde localStorage
+  // Al montar, cargo el usuario desde localStorage
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("user"));
     if (!storedUser) {
@@ -49,7 +50,7 @@ function Account() {
     if (error) {
       setMessage({ type: "error", text: "Error al actualizar contraseña" });
     } else {
-      // Actualizamos localStorage
+      // Actualizo localStorage
       const updatedUser = { ...user, password: newPassword };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setUser(updatedUser);
@@ -168,16 +169,7 @@ function Account() {
       </main>
 
       {/* FOOTER */}
-      <footer className="py-4" style={{ background: "#22223B" }}>
-        <div className="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-          <div className="fw-bold">Gameport © 2026</div>
-          <div className="d-flex gap-4">
-            <a href="#" className="text-white text-decoration-none">Contacto</a>
-            <a href="#" className="text-white text-decoration-none">Términos</a>
-            <a href="#" className="text-white text-decoration-none">Privacidad</a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

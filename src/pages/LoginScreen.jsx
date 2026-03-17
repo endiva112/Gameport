@@ -14,14 +14,14 @@ function Login() {
       .select("*")
       .eq("email", email)
       .eq("password", password)  // contraseña en texto plano
-      .single();  // esperamos solo un resultado
+      .single();  // extraer solo un resultado
 
     if (error || !data) {
       setError("Correo o contraseña incorrectos");
     } else {
-      // guardamos info del usuario en localStorage/sessionStorage o contexto
+      // guardo info del usuario en localStorage/sessionStorage o contexto
       localStorage.setItem("user", JSON.stringify(data));
-      navigate("/"); // redirige al home
+      navigate("/"); // redirigir al home
     }
   };
 

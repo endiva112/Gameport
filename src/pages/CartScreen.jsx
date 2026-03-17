@@ -69,7 +69,7 @@ function Cart() {
 
       <main className="flex-grow-1">
         <div className="container py-4">
-          {/* 🔙 VOLVER */}
+          {/* VOLVER */}
           <button
             className="btn mb-4"
             onClick={() => window.history.back()}
