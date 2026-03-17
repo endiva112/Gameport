@@ -1,0 +1,5 @@
+/* Oculta el scrollbar lateral en navegadores WebKit */
+body::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}

@@ -151,35 +151,35 @@ function Home() {
       </section>
 
       {/* contraste suave */}
-      <section className="py-5" style={{ background: "#3F4360" }}>
+      <section className="py-5" style={{ background: "#3F4360" }} id="PC">
         <div className="container">
           <h2 className="mb-4">PC</h2>
           {renderRow(games)}
         </div>
       </section>
 
-      <section className="py-5" style={{ background: "#4A4E69" }}>
+      <section className="py-5" style={{ background: "#4A4E69" }} id="PLAYSTATION">
         <div className="container">
           <h2 className="mb-4">PlayStation</h2>
           {renderRow(games)}
         </div>
       </section>
 
-      <section className="py-5" style={{ background: "#3F4360" }}>
+      <section className="py-5" style={{ background: "#3F4360" }} id="XBOX">
         <div className="container">
           <h2 className="mb-4">Xbox</h2>
           {renderRow(games)}
         </div>
       </section>
 
-      <section className="py-5" style={{ background: "#4A4E69" }}>
+      <section className="py-5" style={{ background: "#4A4E69" }} id="NINTENDO">
         <div className="container">
           <h2 className="mb-4">Nintendo</h2>
           {renderRow(games)}
         </div>
       </section>
 
-      <section className="py-5" style={{ background: "#3F4360" }}>
+      <section className="py-5" style={{ background: "#3F4360" }} id="TARJETAS">
         <div className="container">
           <h2 className="mb-4">Tarjetas</h2>
           {renderRow(cards)}

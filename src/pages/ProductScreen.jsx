@@ -24,7 +24,7 @@ function Product() {
 
         <div className="container py-4">
 
-          {/* 🔙 BOTÓN VOLVER (fuera del card) */}
+          {/* BOTÓN VOLVER */}
           <button
             className="btn m-5"
             onClick={() => window.history.back()}

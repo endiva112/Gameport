@@ -4,6 +4,8 @@ import Register from './pages/RegisterScreen'
 import Home from './pages/HomeScreen'
 import Search from './pages/SearchScreen'
 import Product from './pages/ProductScreen'
+import User from './pages/UserScreen'
+import Cart from './pages/CartScreen'
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/search" element={<Search />} />
         <Route path="/product" element={<Product />} />
+        <Route path="/user" element={<User />} />
+        <Route path="/cart" element={<Cart />} />
       </Routes>
     </BrowserRouter>
   )
