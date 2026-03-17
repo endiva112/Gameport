@@ -1,7 +1,29 @@
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient.js";
+import { useState } from "react";
 
 function Login() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+
+  const handleLogin = async () => {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", email)
+      .eq("password", password)  // contraseña en texto plano
+      .single();  // esperamos solo un resultado
+
+    if (error || !data) {
+      setError("Correo o contraseña incorrectos");
+    } else {
+      // guardamos info del usuario en localStorage/sessionStorage o contexto
+      localStorage.setItem("user", JSON.stringify(data));
+      navigate("/"); // redirige al home
+    }
+  };
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ background: "#4A4E69" }}>
@@ -31,20 +53,32 @@ function Login() {
 
               <div className="mb-3">
                 <label className="form-label">Correo electrónico</label>
-                <input type="email" className="form-control" />
+                <input
+                  type="email"
+                  className="form-control"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
 
               <div className="mb-4">
                 <label className="form-label">Contraseña</label>
-                <input type="password" className="form-control" />
+                <input
+                  type="password"
+                  className="form-control"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
 
               <button
-                className="btn w-100"
+                className="btn w-100" onClick={handleLogin}
                 style={{ background: "#AAA0A5", fontWeight: "bold", fontSize: "18px" }}
               >
                 Iniciar sesión
               </button>
+
+              {error && <p className="text-danger mt-2">{error}</p>}
 
               <p className="mt-2">
                 <a href="#">Tengo problemas al iniciar sesión</a>

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import ProtectedRoute from "./components/ProtectedRoute";
 import Login from './pages/LoginScreen'
 import Register from './pages/RegisterScreen'
 import Home from './pages/HomeScreen'
@@ -11,13 +12,13 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/search" element={<Search />} />
-        <Route path="/product/:id" element={<Product />} />
-        <Route path="/user" element={<User />} />
-        <Route path="/cart" element={<Cart />} />
+        <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
+        <Route path="/product/:id" element={<ProtectedRoute><Product /></ProtectedRoute>} />
+        <Route path="/user" element={<ProtectedRoute><User /></ProtectedRoute>} />
+        <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   )

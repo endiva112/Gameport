@@ -61,6 +61,12 @@ function Account() {
             <button
               className="btn fw-bold"
               style={{ background: "#AAA0A5" }}
+              onClick={() => {
+                // Limpiamos el usuario guardado
+                localStorage.removeItem("user");
+                // Redirigimos al login
+                window.location.href = "/login";
+              }}
             >
               Cerrar sesión
             </button>

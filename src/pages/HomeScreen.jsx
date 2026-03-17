@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
 import { supabase } from "../supabaseClient.js";
 import { useNavigate } from "react-router-dom";
+
 
 function Home() {
   const [games, setGames] = useState([]);
@@ -184,6 +186,9 @@ function Home() {
           {renderRow(cards)}
         </div>
       </section>
+
+      {/* FOOTER */}
+      <Footer />
     </div>
   );
 }
