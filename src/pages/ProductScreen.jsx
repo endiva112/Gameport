@@ -1,32 +1,84 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom"; // para leer el :id de la URL
+import { useParams } from "react-router-dom";
 import { supabase } from "../supabaseClient.js";
 
 function Product() {
-  const { id } = useParams(); // id de /producto/:id
+  const { id } = useParams();
   const [game, setGame] = useState(null);
   const [inCart, setInCart] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Obtenemos el usuario de localStorage
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-    async function fetchGame() {
-      const { data, error } = await supabase
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    async function fetchData() {
+      // Traemos el producto
+      const { data: productData, error: productError } = await supabase
         .from("products")
         .select("*")
         .eq("id", id)
-        .single(); // devuelve un solo objeto
-      if (error) {
-        console.error("Error cargando producto:", error);
-      } else {
-        setGame(data);
+        .single();
+
+      if (productError) console.error("Error cargando producto:", productError);
+      else setGame(productData);
+
+      // Revisamos si el producto ya está en el carrito
+      const { data: cartData, error: cartError } = await supabase
+        .from("cart")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("product_id", id)
+        .single();
+
+      if (cartError && cartError.code !== "PGRST116") { // PGRST116 = no rows found
+        console.error("Error revisando carrito:", cartError);
+      } else if (cartData) {
+        setInCart(true);
       }
+
+      setLoading(false);
     }
 
-    fetchGame();
-  }, [id]);
+    fetchData();
+  }, [id, user]);
 
-  if (!game) return <div className="text-white text-center mt-5">Cargando...</div>;
+  const handleCartToggle = async () => {
+    if (!user) {
+      alert("Debes iniciar sesión para usar el carrito");
+      return;
+    }
+
+    if (inCart) {
+      // Quitar del carrito
+      const { error } = await supabase
+        .from("cart")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("product_id", id);
+
+      if (error) console.error("Error eliminando del carrito:", error);
+      else setInCart(false);
+    } else {
+      // Agregar al carrito
+      const { error } = await supabase
+        .from("cart")
+        .insert([{ user_id: user.id, product_id: id }]);
+
+      if (error) console.error("Error agregando al carrito:", error);
+      else setInCart(true);
+    }
+  };
+
+  if (loading) return <div className="text-white text-center mt-5">Cargando...</div>;
+  if (!game) return <div className="text-white text-center mt-5">Producto no encontrado</div>;
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ background: "#4A4E69" }}>
@@ -50,7 +102,6 @@ function Product() {
               style={{ background: "#3F4360", maxWidth: "1100px", minHeight: "55vh" }}
             >
               <div className="row h-100 align-items-center">
-
                 {/* IMAGEN */}
                 <div className="col-md-6 mb-4 mb-md-0">
                   <img
@@ -67,9 +118,10 @@ function Product() {
                   <p className="mb-2">⭐ {game.rating} / 5</p>
                   <h2 className="fw-bold mb-4" style={{ color: "#A8E6A3" }}>{game.price}€</h2>
                   <p className="mb-4" style={{ lineHeight: "1.6" }}>{game.description}</p>
+
                   <button
                     className="btn fw-bold"
-                    onClick={() => setInCart(!inCart)}
+                    onClick={handleCartToggle}
                     style={{
                       background: inCart ? "#6FCF97" : "#AAA0A5",
                       color: inCart ? "#1B4332" : "black",
@@ -87,7 +139,6 @@ function Product() {
         </div>
       </main>
 
-      {/* FOOTER */}
       <Footer />
     </div>
   );

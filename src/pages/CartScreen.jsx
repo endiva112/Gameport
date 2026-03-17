@@ -1,37 +1,74 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
+import { supabase } from "../supabaseClient";
 
 function Cart() {
+  const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [cart, setCart] = useState([
-    { name: "Hollow Knight", price: "14.99€", img: "/assets/silksongImg.jpg" },
-    { name: "GTA V", price: "29.99€", img: "/assets/gta_v.png" },
-    { name: "Terraria", price: "9.99€", img: "/assets/terraria.png" }
-  ]);
+  // Usuario logueado
+  const user = JSON.parse(localStorage.getItem("user"));
 
-  // eliminar item
-  const removeFromCart = (index) => {
-    const newCart = [...cart];
-    newCart.splice(index, 1);
-    setCart(newCart);
+  useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    async function fetchCart() {
+      const { data, error } = await supabase
+        .from("cart")
+        .select(`product_id, products(name, price, image_url)`)
+        .eq("user_id", user.id);
+
+      if (error) console.error("Error cargando carrito:", error);
+      else {
+        // mapeamos para tener la misma estructura que antes
+        const items = data.map((item) => ({
+          id: item.product_id,
+          name: item.products.name,
+          price: item.products.price,
+          img: item.products.image_url,
+        }));
+        setCart(items);
+      }
+      setLoading(false);
+    }
+
+    fetchCart();
+  }, [user]);
+
+  const removeFromCart = async (productId) => {
+    const { error } = await supabase
+      .from("cart")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("product_id", productId);
+
+    if (error) console.error("Error eliminando del carrito:", error);
+    else setCart(cart.filter((item) => item.id !== productId));
   };
 
-  // comprar (vaciar carrito)
-  const handleBuy = () => {
-    setCart([]);
+  const handleBuy = async () => {
+    const { error } = await supabase
+      .from("cart")
+      .delete()
+      .eq("user_id", user.id);
+
+    if (error) console.error("Error vaciando carrito:", error);
+    else setCart([]);
   };
+
+  if (loading) return <div className="text-white text-center mt-5">Cargando carrito...</div>;
+  if (!user) return <div className="text-white text-center mt-5">Debes iniciar sesión para ver tu carrito</div>;
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ background: "#4A4E69" }}>
-
-      {/* HEADER */}
       <Header />
 
-      {/* BODY */}
       <main className="flex-grow-1">
-
         <div className="container py-4">
-
           {/* 🔙 VOLVER */}
           <button
             className="btn mb-4"
@@ -53,7 +90,6 @@ function Cart() {
               margin: "0 auto"
             }}
           >
-
             <h2 className="text-white fw-bold mb-4">Carrito</h2>
 
             {cart.length === 0 ? (
@@ -62,15 +98,12 @@ function Cart() {
               <>
                 {/* LISTA */}
                 <div className="d-flex flex-column gap-3 mb-4">
-
-                  {cart.map((game, i) => (
+                  {cart.map((game) => (
                     <div
-                      key={i}
+                      key={game.id}
                       className="d-flex align-items-center p-3 rounded"
                       style={{ background: "#4A4E69" }}
                     >
-
-                      {/* IMAGEN */}
                       <img
                         src={game.img}
                         alt={game.name}
@@ -81,17 +114,13 @@ function Cart() {
                           borderRadius: "8px"
                         }}
                       />
-
-                      {/* INFO */}
                       <div className="ms-3 flex-grow-1 text-white">
                         <h6 className="mb-1">{game.name}</h6>
-                        <p className="mb-0">{game.price}</p>
+                        <p className="mb-0">{game.price}€</p>
                       </div>
-
-                      {/* ELIMINAR */}
                       <button
                         className="btn btn-sm fw-bold"
-                        onClick={() => removeFromCart(i)}
+                        onClick={() => removeFromCart(game.id)}
                         style={{
                           background: "#E57373",
                           color: "white"
@@ -99,10 +128,8 @@ function Cart() {
                       >
                         ✕
                       </button>
-
                     </div>
                   ))}
-
                 </div>
 
                 {/* BOTÓN COMPRAR */}
@@ -121,30 +148,11 @@ function Cart() {
                 </div>
               </>
             )}
-
           </div>
-
         </div>
-
       </main>
 
-      {/* FOOTER */}
-      <footer className="py-4" style={{ background: "#22223B" }}>
-        <div className="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-
-          <div className="fw-bold">
-            Gameport © 2026
-          </div>
-
-          <div className="d-flex gap-4">
-            <a href="#" className="text-white text-decoration-none">Contacto</a>
-            <a href="#" className="text-white text-decoration-none">Términos</a>
-            <a href="#" className="text-white text-decoration-none">Privacidad</a>
-          </div>
-
-        </div>
-      </footer>
-
+      <Footer />
     </div>
   );
 }
