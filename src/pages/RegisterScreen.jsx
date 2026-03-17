@@ -1,7 +1,59 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 function Register() {
   const navigate = useNavigate();
+
+  // Estados del formulario
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [message, setMessage] = useState(null);
+
+  const handleRegister = async () => {
+    setMessage(null);
+
+    if (!email || !password) {
+      setMessage({ type: "error", text: "Completa todos los campos" });
+      return;
+    }
+    if (!acceptTerms) {
+      setMessage({ type: "error", text: "Debes aceptar los términos y condiciones" });
+      return;
+    }
+
+    // Comprobamos si ya existe un usuario con ese correo
+    const { data: existing, error: checkError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", email);
+
+    if (checkError) {
+      setMessage({ type: "error", text: "Error al verificar correo" });
+      return;
+    }
+
+    if (existing.length > 0) {
+      setMessage({ type: "error", text: "Ya existe un usuario con ese correo" });
+      return;
+    }
+
+    // Creamos usuario
+    const { data, error } = await supabase
+      .from("users")
+      .insert([{ email, password }])
+      .select()
+      .single();
+
+    if (error) {
+      setMessage({ type: "error", text: "Error al crear la cuenta" });
+    } else {
+      // Guardamos usuario en localStorage para sesión
+      localStorage.setItem("user", JSON.stringify(data));
+      navigate("/"); // redirige al home
+    }
+  };
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ background: "#4A4E69" }}>
@@ -17,12 +69,7 @@ function Register() {
       <main className="flex-grow-1 d-flex align-items-center justify-content-center">
         <div
           className="container p-4 rounded d-flex"
-          style={{
-            background: "#F2E9E4",
-            maxWidth: "1100px",
-            height: "50vh",
-            alignItems: "center",
-          }}
+          style={{ background: "#F2E9E4", maxWidth: "1100px", height: "50vh", alignItems: "center" }}
         >
           <div className="row w-100 align-items-center h-100">
             {/* FORM */}
@@ -31,16 +78,32 @@ function Register() {
 
               <div className="mb-3 w-100">
                 <label className="form-label">Correo electrónico</label>
-                <input type="email" className="form-control" />
+                <input
+                  type="email"
+                  className="form-control"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
 
               <div className="mb-3 w-100">
                 <label className="form-label">Contraseña</label>
-                <input type="password" className="form-control" />
+                <input
+                  type="password"
+                  className="form-control"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
 
               <div className="mb-3 form-check">
-                <input type="checkbox" className="form-check-input" id="termsCheck" />
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="termsCheck"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                />
                 <label className="form-check-label" htmlFor="termsCheck">
                   Acepto términos y condiciones
                 </label>
@@ -49,9 +112,16 @@ function Register() {
               <button
                 className="btn w-100"
                 style={{ background: "#AAA0A5", fontWeight: "bold", fontSize: "18px" }}
+                onClick={handleRegister}
               >
                 Registrarse
               </button>
+
+              {message && (
+                <p className={`mt-2 ${message.type === "error" ? "text-danger" : "text-success"}`}>
+                  {message.text}
+                </p>
+              )}
             </div>
 
             {/* INFO / DERECHA */}
