@@ -1,3 +1,5 @@
+import Header from "../components/Header";
+
 function Home() {
   const games = [
     { name: "Hollow Knight", img: "/assets/silksongImg.jpg" },
@@ -58,27 +60,7 @@ function Home() {
     <div style={{ background: "#4A4E69", minHeight: "100vh", color: "white" }}>
 
       {/* HEADER */}
-      <header className="container-fluid py-3" style={{ background: "#22223B" }}>
-        <div className="container d-flex justify-content-between align-items-center">
-          <img src="/assets/logo.png" alt="logo" style={{ height: "50px" }} />
-
-          <div className="d-flex gap-4 align-items-center">
-            <a href="#" className="text-white text-decoration-none">PC</a>
-            <a href="#" className="text-white text-decoration-none">PlayStation</a>
-            <a href="#" className="text-white text-decoration-none">Xbox</a>
-            <a href="#" className="text-white text-decoration-none">Nintendo</a>
-            <a href="#" className="text-white text-decoration-none">Tarjetas</a>
-
-            <button
-              className="btn fw-bold"
-              style={{ background: "#AAA0A5", borderRadius: "8px" }}
-              onClick={() => (window.location.href = "/search")}
-            >
-              Buscar
-            </button>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* SECCIONES */}
 
