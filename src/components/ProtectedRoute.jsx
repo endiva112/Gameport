@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
+import { useAuthStore } from "../zustand/authStore";
 
 export default function ProtectedRoute({ children }) {
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const { user, setUser } = useAuthStore();
 
   useEffect(() => {
-    // Reviso si hay usuario en localStorage
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
