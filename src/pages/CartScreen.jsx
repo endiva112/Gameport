@@ -2,19 +2,15 @@ import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { supabase } from "../supabaseClient";
+import { useAuthStore } from "../zustand/authStore";
 
 function Cart() {
   const [cart, setCart] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  // Usuario logueado
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
 
     async function fetchCart() {
       const { data, error } = await supabase
@@ -22,18 +18,19 @@ function Cart() {
         .select(`product_id, products(name, price, image_url)`)
         .eq("user_id", user.id);
 
-      if (error) console.error("Error cargando carrito:", error);
-      else {
-        // mapeamos para tener la misma estructura que antes
-        const items = data.map((item) => ({
-          id: item.product_id,
-          name: item.products.name,
-          price: item.products.price,
-          img: item.products.image_url,
-        }));
-        setCart(items);
+      if (error) {
+        console.error(error);
+        return;
       }
-      setLoading(false);
+
+      const items = data.map((item) => ({
+        id: item.product_id,
+        name: item.products.name,
+        price: item.products.price,
+        img: item.products.image_url,
+      }));
+
+      setCart(items);
     }
 
     fetchCart();
@@ -46,8 +43,9 @@ function Cart() {
       .eq("user_id", user.id)
       .eq("product_id", productId);
 
-    if (error) console.error("Error eliminando del carrito:", error);
-    else setCart(cart.filter((item) => item.id !== productId));
+    if (!error) {
+      setCart((prev) => prev.filter((item) => item.id !== productId));
+    }
   };
 
   const handleBuy = async () => {
@@ -56,12 +54,10 @@ function Cart() {
       .delete()
       .eq("user_id", user.id);
 
-    if (error) console.error("Error vaciando carrito:", error);
-    else setCart([]);
+    if (!error) {
+      setCart([]);
+    }
   };
-
-  if (loading) return <div className="text-white text-center mt-5">Cargando carrito...</div>;
-  if (!user) return <div className="text-white text-center mt-5">Debes iniciar sesión para ver tu carrito</div>;
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ background: "#4A4E69" }}>
@@ -69,14 +65,14 @@ function Cart() {
 
       <main className="flex-grow-1">
         <div className="container py-4">
-          {/* VOLVER */}
+
           <button
             className="btn mb-4"
             onClick={() => window.history.back()}
             style={{
               background: "#22223B",
               color: "white",
-              borderRadius: "8px"
+              borderRadius: "8px",
             }}
           >
             ← Volver
@@ -87,7 +83,7 @@ function Cart() {
             style={{
               background: "#3F4360",
               maxWidth: "900px",
-              margin: "0 auto"
+              margin: "0 auto",
             }}
           >
             <h2 className="text-white fw-bold mb-4">Carrito</h2>
@@ -96,7 +92,6 @@ function Cart() {
               <p className="text-white">Tu carrito está vacío</p>
             ) : (
               <>
-                {/* LISTA */}
                 <div className="d-flex flex-column gap-3 mb-4">
                   {cart.map((game) => (
                     <div
@@ -111,19 +106,21 @@ function Cart() {
                           width: "80px",
                           height: "80px",
                           objectFit: "cover",
-                          borderRadius: "8px"
+                          borderRadius: "8px",
                         }}
                       />
+
                       <div className="ms-3 flex-grow-1 text-white">
                         <h6 className="mb-1">{game.name}</h6>
                         <p className="mb-0">{game.price}€</p>
                       </div>
+
                       <button
                         className="btn btn-sm fw-bold"
                         onClick={() => removeFromCart(game.id)}
                         style={{
                           background: "#E57373",
-                          color: "white"
+                          color: "white",
                         }}
                       >
                         ✕
@@ -132,7 +129,6 @@ function Cart() {
                   ))}
                 </div>
 
-                {/* BOTÓN COMPRAR */}
                 <div className="d-flex justify-content-end">
                   <button
                     className="btn fw-bold px-4 py-2"
@@ -140,7 +136,7 @@ function Cart() {
                     style={{
                       background: "#6FCF97",
                       color: "#1B4332",
-                      fontSize: "18px"
+                      fontSize: "18px",
                     }}
                   >
                     Comprar

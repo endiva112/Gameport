@@ -3,48 +3,47 @@ import Footer from "../components/Footer";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "../supabaseClient.js";
+import { useAuthStore } from "../zustand/authStore";
 
 function Product() {
   const { id } = useParams();
+
   const [game, setGame] = useState(null);
   const [inCart, setInCart] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  // Obtengo el usuario de localStorage
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
 
     async function fetchData() {
-      // Extraigo el producto
+      // Producto
       const { data: productData, error: productError } = await supabase
         .from("products")
         .select("*")
         .eq("id", id)
         .single();
 
-      if (productError) console.error("Error cargando producto:", productError);
-      else setGame(productData);
+      if (productError) {
+        console.error("Error cargando producto:", productError);
+        return;
+      }
 
-      // Reviso si el producto ya está en el carrito
+      setGame(productData);
+
+      // Ver si está en carrito
       const { data: cartData, error: cartError } = await supabase
         .from("cart")
         .select("*")
         .eq("user_id", user.id)
         .eq("product_id", id)
-        .single();
+        .maybeSingle();
 
-      if (cartError && cartError.code !== "PGRST116") { // PGRST116 = no rows found
+      if (cartError) {
         console.error("Error revisando carrito:", cartError);
-      } else if (cartData) {
-        setInCart(true);
+      } else {
+        setInCart(!!cartData);
       }
-
-      setLoading(false);
     }
 
     fetchData();
@@ -57,28 +56,29 @@ function Product() {
     }
 
     if (inCart) {
-      // Quito del carrito
       const { error } = await supabase
         .from("cart")
         .delete()
         .eq("user_id", user.id)
         .eq("product_id", id);
 
-      if (error) console.error("Error eliminando del carrito:", error);
-      else setInCart(false);
+      if (!error) setInCart(false);
     } else {
-      // Agrego al carrito
       const { error } = await supabase
         .from("cart")
         .insert([{ user_id: user.id, product_id: id }]);
 
-      if (error) console.error("Error agregando al carrito:", error);
-      else setInCart(true);
+      if (!error) setInCart(true);
     }
   };
 
-  if (loading) return <div className="text-white text-center mt-5">Cargando...</div>;
-  if (!game) return <div className="text-white text-center mt-5">Producto no encontrado</div>;
+  if (!game) {
+    return (
+      <div className="text-white text-center mt-5">
+        Cargando...
+      </div>
+    );
+  }
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ background: "#4A4E69" }}>
@@ -86,7 +86,7 @@ function Product() {
 
       <main className="flex-grow-1">
         <div className="container py-4">
-          {/* BOTÓN VOLVER */}
+
           <button
             className="btn m-5"
             onClick={() => window.history.back()}
@@ -95,20 +95,29 @@ function Product() {
             ← Volver
           </button>
 
-          {/* CARD CENTRADA */}
           <div className="d-flex justify-content-center align-items-center">
             <div
               className="container p-4 rounded"
-              style={{ background: "#3F4360", maxWidth: "1100px", minHeight: "55vh" }}
+              style={{
+                background: "#3F4360",
+                maxWidth: "1100px",
+                minHeight: "55vh",
+              }}
             >
               <div className="row h-100 align-items-center">
+
                 {/* IMAGEN */}
                 <div className="col-md-6 mb-4 mb-md-0">
                   <img
                     src={game.image_url}
                     alt={game.name}
                     className="img-fluid rounded"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", maxHeight: "500px" }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      maxHeight: "500px",
+                    }}
                   />
                 </div>
 
@@ -116,8 +125,12 @@ function Product() {
                 <div className="col-md-6 text-white d-flex flex-column justify-content-center">
                   <h1 className="fw-bold mb-3">{game.name}</h1>
                   <p className="mb-2">⭐ {game.rating} / 5</p>
-                  <h2 className="fw-bold mb-4" style={{ color: "#A8E6A3" }}>{game.price}€</h2>
-                  <p className="mb-4" style={{ lineHeight: "1.6" }}>{game.description}</p>
+                  <h2 className="fw-bold mb-4" style={{ color: "#A8E6A3" }}>
+                    {game.price}€
+                  </h2>
+                  <p className="mb-4" style={{ lineHeight: "1.6" }}>
+                    {game.description}
+                  </p>
 
                   <button
                     className="btn fw-bold"
@@ -127,15 +140,17 @@ function Product() {
                       color: inCart ? "#1B4332" : "black",
                       fontSize: "18px",
                       width: "260px",
-                      transition: "0.2s"
+                      transition: "0.2s",
                     }}
                   >
                     {inCart ? "✔ En el carrito" : "Añadir al carrito"}
                   </button>
                 </div>
+
               </div>
             </div>
           </div>
+
         </div>
       </main>
 

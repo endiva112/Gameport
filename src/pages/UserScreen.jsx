@@ -1,42 +1,34 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../zustand/authStore";
 
 function Account() {
   const navigate = useNavigate();
 
-  // Estado de usuario actual
-  const [user, setUser] = useState(null);
+  const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
-  // Inputs
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState(null);
 
-  // Al montar, cargo el usuario desde localStorage
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (!storedUser) {
-      navigate("/login");
-    } else {
-      setUser(storedUser);
-    }
-  }, []);
-
-  // Función para actualizar contraseña
   const handleUpdatePassword = async () => {
     setMessage(null);
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       setMessage({ type: "error", text: "Completa todos los campos" });
       return;
     }
+
     if (newPassword !== confirmPassword) {
       setMessage({ type: "error", text: "Las contraseñas no coinciden" });
       return;
     }
+
     if (currentPassword !== user.password) {
       setMessage({ type: "error", text: "Contraseña actual incorrecta" });
       return;
@@ -49,21 +41,18 @@ function Account() {
 
     if (error) {
       setMessage({ type: "error", text: "Error al actualizar contraseña" });
-    } else {
-      // Actualizo localStorage
-      const updatedUser = { ...user, password: newPassword };
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      setUser(updatedUser);
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setMessage({ type: "success", text: "Contraseña actualizada correctamente" });
+      return;
     }
+
+    setMessage({ type: "success", text: "Contraseña actualizada correctamente" });
+
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
   };
 
-  // Función para eliminar cuenta
   const handleDeleteAccount = async () => {
-    if (!window.confirm("¿Estás seguro de eliminar tu cuenta? Esta acción es irreversible.")) return;
+    if (!window.confirm("¿Seguro que quieres eliminar tu cuenta?")) return;
 
     const { error } = await supabase
       .from("users")
@@ -72,10 +61,16 @@ function Account() {
 
     if (error) {
       setMessage({ type: "error", text: "Error al eliminar cuenta" });
-    } else {
-      localStorage.removeItem("user");
-      navigate("/login");
+      return;
     }
+
+    logout();
+    navigate("/login");
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
   };
 
   return (
@@ -88,44 +83,40 @@ function Account() {
           style={{
             background: "#3F4360",
             maxWidth: "600px",
-            width: "100%"
+            width: "100%",
           }}
         >
-          <h2 className="text-white fw-bold mb-4 text-center">Mi cuenta</h2>
+          <h2 className="text-white fw-bold mb-4 text-center">
+            Mi cuenta
+          </h2>
 
-          {/* FORM CAMBIAR CONTRASEÑA */}
+          {/* CAMBIAR CONTRASEÑA */}
           <div className="mb-4">
             <h5 className="text-white mb-3">Cambiar contraseña</h5>
 
-            <div className="mb-3">
-              <label className="form-label text-white">Contraseña actual</label>
-              <input
-                type="password"
-                className="form-control"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-              />
-            </div>
+            <input
+              type="password"
+              className="form-control mb-3"
+              placeholder="Contraseña actual"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
 
-            <div className="mb-3">
-              <label className="form-label text-white">Nueva contraseña</label>
-              <input
-                type="password"
-                className="form-control"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </div>
+            <input
+              type="password"
+              className="form-control mb-3"
+              placeholder="Nueva contraseña"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
 
-            <div className="mb-3">
-              <label className="form-label text-white">Confirmar nueva contraseña</label>
-              <input
-                type="password"
-                className="form-control"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
+            <input
+              type="password"
+              className="form-control mb-3"
+              placeholder="Confirmar nueva contraseña"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
 
             <button
               className="btn w-100 fw-bold"
@@ -136,7 +127,11 @@ function Account() {
             </button>
 
             {message && (
-              <p className={`mt-2 ${message.type === "error" ? "text-danger" : "text-success"}`}>
+              <p
+                className={`mt-2 ${
+                  message.type === "error" ? "text-danger" : "text-success"
+                }`}
+              >
                 {message.text}
               </p>
             )}
@@ -149,10 +144,7 @@ function Account() {
             <button
               className="btn fw-bold"
               style={{ background: "#AAA0A5" }}
-              onClick={() => {
-                localStorage.removeItem("user");
-                navigate("/login");
-              }}
+              onClick={handleLogout}
             >
               Cerrar sesión
             </button>
@@ -168,7 +160,6 @@ function Account() {
         </div>
       </main>
 
-      {/* FOOTER */}
       <Footer />
     </div>
   );
