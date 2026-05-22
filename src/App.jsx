@@ -1,5 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+
 import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
+
 import Login from './pages/LoginScreen'
 import Register from './pages/RegisterScreen'
 import Home from './pages/HomeScreen'
@@ -13,8 +16,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
         <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
         <Route path="/product/:id" element={<ProtectedRoute><Product /></ProtectedRoute>} />
         <Route path="/user" element={<ProtectedRoute><User /></ProtectedRoute>} />

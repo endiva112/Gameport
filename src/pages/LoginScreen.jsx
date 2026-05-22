@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient.js";
 import { useState } from "react";
+import { useAuthStore } from "../zustand/authStore";
 
 function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const setUser = useAuthStore((state) => state.setUser);
 
   const handleLogin = async () => {
     const { data, error } = await supabase
@@ -19,8 +21,8 @@ function Login() {
     if (error || !data) {
       setError("Correo o contraseña incorrectos");
     } else {
-      // guardo info del usuario en localStorage/sessionStorage o contexto
-      localStorage.setItem("user", JSON.stringify(data));
+      // guardo info usando zurstand
+      setUser(data);
       navigate("/"); // redirigir al home
     }
   };
