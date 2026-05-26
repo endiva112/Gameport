@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
+import { useAuthStore } from "../zustand/authStore";
 
 function Register() {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ function Register() {
   const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [message, setMessage] = useState(null);
+  const setUser = useAuthStore((state) => state.setUser);
 
   const handleRegister = async () => {
     setMessage(null);
@@ -49,8 +51,8 @@ function Register() {
     if (error) {
       setMessage({ type: "error", text: "Error al crear la cuenta" });
     } else {
-      // Guardo usuario en localStorage para sesión
-      localStorage.setItem("user", JSON.stringify(data));
+      // Guardo usuario en Zurstand
+      setUser(data);
       navigate("/"); // redirijo al home
     }
   };
